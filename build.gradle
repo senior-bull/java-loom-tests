@@ -1,0 +1,16 @@
+apply plugin: "java"
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main.java.srcDirs = ['src/main/java', '../src/main/java']
+}
