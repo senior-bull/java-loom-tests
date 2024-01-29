@@ -8,8 +8,6 @@ record StockTip(String symbol, double sentiment, double delta24) {}
 
 public class SimpleStructuredConcurrencyExample {
 
-
-
     private static double getSentiment(String sumbol) {
         try {
             Thread.sleep(3000);
