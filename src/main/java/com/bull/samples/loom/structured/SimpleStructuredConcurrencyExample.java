@@ -1,11 +1,14 @@
 package com.bull.samples.loom.structured;
 
+import java.time.Instant;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.StructuredTaskScope.Subtask;
 
 record StockTip(String symbol, double sentiment, double delta24) {}
 
 public class SimpleStructuredConcurrencyExample {
+
+
 
     private static double getSentiment(String sumbol) {
         try {
@@ -25,10 +28,17 @@ public class SimpleStructuredConcurrencyExample {
         return 5.0;
     }
 
-    public static StockTip calc(String symbol) {
+    /**
+     * There are two built-in shutdown policies for the scope (and custom shutdown policies are also supported):
+     * - Cancel all subtasks if one of them fails (ShutdownOnFailure)
+     * - Cancel all subtasks if one of them succeeds (ShutdownOnSuccess)
+     */
+    public static StockTip calc(String symbol, Instant deadline) {
         try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
             Subtask<Double> fSentiment = scope.fork(() -> getSentiment(symbol));
             Subtask<Double> fDelta = scope.fork(() -> getDelta24(symbol));
+
+            scope.joinUntil(deadline);
 
             return new StockTip(symbol, fSentiment.get(), fDelta.get());
         } catch (Exception e) {
@@ -37,6 +47,6 @@ public class SimpleStructuredConcurrencyExample {
     }
 
     public static void main(String[] args) {
-        System.out.println(calc("GOOG"));
+        System.out.println(calc("GOOG", Instant.now().plusSeconds(30)));
     }
 }
