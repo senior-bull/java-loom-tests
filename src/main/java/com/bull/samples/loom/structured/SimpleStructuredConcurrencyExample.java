@@ -1,7 +1,5 @@
 package com.bull.samples.loom.structured;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.StructuredTaskScope.Subtask;
 
@@ -29,17 +27,11 @@ public class SimpleStructuredConcurrencyExample {
 
     public static StockTip calc(String symbol) {
         try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            Callable<Double> getSentiment = () -> getSentiment(symbol);
-            Subtask<Double> fSentiment = scope.fork(getSentiment);
-
-            Callable<Double> getDelta = () -> getDelta24(symbol);
-            Subtask<Double> fDelta = scope.fork(getDelta);
-
-            scope.join();
-            scope.throwIfFailed();
+            Subtask<Double> fSentiment = scope.fork(() -> getSentiment(symbol));
+            Subtask<Double> fDelta = scope.fork(() -> getDelta24(symbol));
 
             return new StockTip(symbol, fSentiment.get(), fDelta.get());
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Some requests failed", e);
         }
     }
